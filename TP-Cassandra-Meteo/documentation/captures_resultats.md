@@ -50,6 +50,36 @@ sans `ORDER BY` côté applicatif. Range query native sur le SSTable.
 
 ---
 
+## REQ-03 — Toutes les prévisions disponibles pour une ville (Marseille, 12 premières lignes)
+
+```
+cqlsh:weather> SELECT city, forecast_time, temperature, humidity, wind_speed, weather_code
+               FROM weather_hourly
+               WHERE city = 'Marseille'
+               LIMIT 12;
+
+ city      | forecast_time                   | temperature | humidity | wind_speed | weather_code
+-----------+---------------------------------+-------------+----------+------------+--------------
+ Marseille | 2026-10-07 23:00:00.000000+0000 |        20.9 |       90 |        8.4 |           82
+ Marseille | 2026-10-07 22:00:00.000000+0000 |        21.7 |       87 |        6.2 |           80
+ Marseille | 2026-10-07 21:00:00.000000+0000 |        22.6 |       78 |       16.9 |            3
+ Marseille | 2026-10-07 20:00:00.000000+0000 |        21.8 |       86 |       14.8 |           80
+ Marseille | 2026-10-07 19:00:00.000000+0000 |        21.8 |       83 |       15.1 |            3
+ Marseille | 2026-10-07 18:00:00.000000+0000 |        21.7 |       82 |        4.9 |           81
+ Marseille | 2026-10-07 17:00:00.000000+0000 |        22.5 |       76 |       17.7 |           51
+ Marseille | 2026-10-07 16:00:00.000000+0000 |        21.9 |       78 |       13.9 |            3
+ Marseille | 2026-10-07 15:00:00.000000+0000 |        21.4 |       80 |       12.3 |            3
+ Marseille | 2026-10-07 14:00:00.000000+0000 |        21.8 |       79 |       12.5 |           53
+ Marseille | 2026-10-07 13:00:00.000000+0000 |        20.9 |       86 |       10.1 |           82
+ Marseille | 2026-10-07 12:00:00.000000+0000 |        21.3 |       84 |       23.8 |           82
+
+(12 rows)
+```
+
+Les données sont retournées dans l'ordre `forecast_time DESC` (du plus récent au plus ancien), défini dans le `CLUSTERING ORDER BY` de la table, sans avoir à ajouter `ORDER BY` dans la requête. On lit toute la partition de Marseille en une seule passe séquentielle.
+
+---
+
 ## REQ-04 — Alertes météo du jour en France, triées par sévérité
 
 ```
